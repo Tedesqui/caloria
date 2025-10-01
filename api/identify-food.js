@@ -17,22 +17,31 @@ export default async function handler(request, response) {
             return response.status(400).json({ error: 'A imagem é obrigatória.' });
         }
 
-        // --- PROMPT MODIFICADO PARA ANÁLISE DE ALIMENTOS E CALORIAS ---
+        // --- PROMPT MODIFICADO PARA ANÁLISE DE MÚLTIPLOS ALIMENTOS ---
         const prompt = `
-        Analise a imagem focando no alimento principal apresentado.
-        Sua tarefa é identificar três coisas:
-        1. O nome do alimento (ex: "Banana", "Bife grelhado", "Arroz branco").
-        2. Uma estimativa da quantidade ou peso em gramas (ex: 120, 200, 150).
-        3. O valor calórico total estimado para essa quantidade (ex: 105, 350, 204).
+        Analise a imagem de um prato de comida. Sua tarefa é identificar TODOS os alimentos relevantes na imagem.
 
-        Formate sua resposta final estritamente como um objeto JSON com três chaves:
-        - "alimento": uma string com o nome do alimento.
-        - "quantidade": um número representando o peso em gramas.
-        - "calorias": um número representando o total de calorias (kcal).
+        Para cada alimento identificado, forneça:
+        1. O nome do alimento (ex: "Arroz branco", "Feijão", "Bife grelhado").
+        2. Uma estimativa do peso em gramas (ex: 150, 100, 120).
+        3. O valor calórico estimado para essa quantidade.
 
-        Se não conseguir identificar alguma das informações, o valor da chave correspondente deve ser null.
+        Formate sua resposta final estritamente como um único objeto JSON. Este objeto deve conter:
+        - Uma chave "itens", que é um ARRAY de objetos. Cada objeto dentro do array representa um alimento e deve ter as chaves "alimento", "quantidade" e "calorias".
+        - Uma chave "total_calorias", que é a SOMA de todas as calorias dos itens identificados.
+
+        Exemplo de formato de resposta:
+        {
+          "itens": [
+            { "alimento": "Arroz branco", "quantidade": 150, "calorias": 204 },
+            { "alimento": "Feijão carioca", "quantidade": 100, "calorias": 76 },
+            { "alimento": "Bife grelhado", "quantidade": 120, "calorias": 350 }
+          ],
+          "total_calorias": 630
+        }
+
+        Se não conseguir identificar nenhum alimento, retorne um array "itens" vazio e "total_calorias" como 0.
         Não inclua nada na sua resposta além do objeto JSON.
-        Seja o mais preciso possível na sua estimativa.
         `;
 
         const completion = await openai.chat.completions.create({
@@ -47,18 +56,14 @@ export default async function handler(request, response) {
                     ],
                 },
             ],
-            max_tokens: 800,
+            max_tokens: 1000, // Aumentado um pouco para acomodar mais itens
         });
 
         const aiResultString = completion.choices[0].message.content;
         const parsedResult = JSON.parse(aiResultString);
 
-        // --- RESPOSTA MODIFICADA COM OS DADOS DO ALIMENTO ---
-        return response.status(200).json({
-            alimento: parsedResult.alimento,
-            quantidade: parsedResult.quantidade,
-            calorias: parsedResult.calorias
-        });
+        // Retorna o objeto JSON completo (que agora contém a lista de itens e o total)
+        return response.status(200).json(parsedResult);
 
     } catch (error) {
         console.error('Erro geral na função da API:', error);
