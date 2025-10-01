@@ -1,0 +1,9 @@
+{
+    "name": "food-calorie-calculator-backend",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Backend para a Calculadora de Calorias de Alimentos com IA",
+    "dependencies": {
+        "openai": "^4.0.0"
+    }
+}
