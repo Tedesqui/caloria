@@ -5,95 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Calculadora de Calorias por IA</title>
     <style>
+        /* O CSS permanece o mesmo - sem alterações aqui */
         body, html {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: black;
-            color: white;
-            overflow: hidden;
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: black; color: white; overflow: hidden;
         }
         video, canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            z-index: 0;
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: 0;
         }
-        canvas {
-            display: none;
-        }
+        canvas { display: none; }
         #ui-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            z-index: 2;
+            position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2;
         }
         #controls {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            display: flex; gap: 15px; justify-content: center; align-items: center; padding: 20px;
             background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
         }
         button {
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            justify-content: center;
+            padding: 12px 20px; font-size: 16px; font-weight: bold; background-color: #007bff; color: white;
+            border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex;
+            align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); justify-content: center;
         }
-        button:hover:not(:disabled) {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-        }
-        button:disabled {
-            background: #555;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+        button:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); }
+        button:disabled { background: #555; cursor: not-allowed; opacity: 0.7; }
         #output-panel {
-            background: rgba(0,0,0,0.9);
-            padding: 15px;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-sizing: border-box;
-            border-top: 1px solid #444;
+            background: rgba(0,0,0,0.9); padding: 15px; max-height: 85vh; overflow-y: auto;
+            box-sizing: border-box; border-top: 1px solid #444;
         }
-        #identification-result {
-            background-color: #2a2a2a;
-            padding: 1rem;
-            border-radius: 6px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            line-height: 1.6;
-            font-size: 1.5em;
-            text-align: center;
+        #identification-result { /* Agora usado como container */
+            background-color: #2a2a2a; padding: 1rem; border-radius: 6px;
         }
         .status-text {
-            text-align: center;
-            padding: 20px;
-            font-size: 1.1em;
-            font-weight: 500;
+            text-align: center; padding: 20px; font-size: 1.1em; font-weight: 500;
         }
         .actions-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
+            display: flex; flex-direction: column; gap: 10px; margin-top: 15px;
+        }
+        /* Estilos para a nova tabela de resultados */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            font-size: 1.1em;
+        }
+        .results-table th, .results-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+        .results-table th { font-weight: bold; }
+        .results-table td:nth-child(2), .results-table td:nth-child(3) {
+             text-align: right;
+        }
+        .total-calories {
+            text-align: center;
+            font-size: 1.6em;
+            font-weight: bold;
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -111,6 +79,7 @@
     </div>
 
     <script>
+        // ... (as funções startCamera, toggleZoom, e resetUI permanecem exatamente as mesmas)
         const video = document.getElementById("video");
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
@@ -150,6 +119,7 @@
         }
 
 
+        // --- FUNÇÃO DE CAPTURA ATUALIZADA PARA EXIBIR MÚLTIPLOS ITENS ---
         async function captureAndIdentify() {
             captureBtn.disabled = true;
             const MAX_WIDTH = 1024;
@@ -160,11 +130,11 @@
             video.style.display = 'none';
             canvas.style.display = 'block';
             controlsDiv.style.display = 'none';
-            outputPanel.innerHTML = `<div class="status-text">🍲 Analisando o alimento e calculando calorias...</div>`;
+            outputPanel.innerHTML = `<div class="status-text">🍲 Analisando o prato e calculando calorias...</div>`;
 
             try {
                 const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                const apiUrl = "/api/identify-food"; // <-- URL DA API ATUALIZADA
+                const apiUrl = "/api/identify-food";
 
                 const response = await fetch(apiUrl, {
                     method: "POST",
@@ -175,21 +145,45 @@
                 const responseBodyText = await response.text();
                 if (!response.ok) {
                     let errorMessage = `Erro na API: ${response.status}`;
-                    try {
-                        const errorJson = JSON.parse(responseBodyText);
-                        if (errorJson.error) { errorMessage = errorJson.error; }
-                    } catch (e) {
-                        if (responseBodyText) { errorMessage = responseBodyText; }
-                    }
+                    try { const errorJson = JSON.parse(responseBodyText); if (errorJson.error) { errorMessage = errorJson.error; } }
+                    catch (e) { if (responseBodyText) { errorMessage = responseBodyText; } }
                     throw new Error(errorMessage);
                 }
 
                 const data = JSON.parse(responseBodyText);
                 
-                if (data.alimento && data.quantidade && data.calorias) {
-                    outputPanel.innerHTML = `<h2>✅ Análise Concluída</h2><pre id="identification-result">Alimento: ${data.alimento}\nPeso Estimado: ${data.quantidade}g\nCalorias: ${data.calorias} kcal</pre>`;
+                if (data.itens && data.itens.length > 0) {
+                    // Constrói a tabela de resultados dinamicamente
+                    let tableRows = data.itens.map(item => `
+                        <tr>
+                            <td>${item.alimento}</td>
+                            <td>${item.quantidade}g</td>
+                            <td>${item.calorias} kcal</td>
+                        </tr>
+                    `).join('');
+
+                    outputPanel.innerHTML = `
+                        <h2>✅ Análise Concluída</h2>
+                        <div id="identification-result">
+                            <table class="results-table">
+                                <thead>
+                                    <tr>
+                                        <th>Alimento</th>
+                                        <th>Peso Est.</th>
+                                        <th>Calorias</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                            <div class="total-calories">
+                                Total: ${data.total_calorias} kcal
+                            </div>
+                        </div>
+                    `;
                 } else {
-                    outputPanel.innerHTML = `<h2>⚠️ Análise Incompleta</h2><pre id="identification-result">Não foi possível identificar todas as informações sobre o alimento na imagem.</pre>`;
+                    outputPanel.innerHTML = `<h2>⚠️ Análise Incompleta</h2><div id="identification-result"><p>Não foi possível identificar alimentos na imagem.</p></div>`;
                 }
 
                 const actionsContainer = document.createElement('div');
@@ -199,7 +193,7 @@
                 saveButton.innerHTML = `💾 Salvar Imagem`;
                 saveButton.onclick = () => {
                     const link = document.createElement('a');
-                    link.download = `alimento-${data.alimento || 'desconhecido'}.jpg`;
+                    link.download = `analise-alimentos.jpg`; // Nome de arquivo genérico
                     link.href = canvas.toDataURL('image/jpeg', 0.9);
                     link.click();
                 };
@@ -213,6 +207,7 @@
                 outputPanel.appendChild(actionsContainer);
 
             } catch (err) {
+                // ... (bloco catch permanece o mesmo)
                 outputPanel.innerHTML = `<div class="status-text">❌ Erro ao analisar:<br><small>${err.message}</small></div>`;
                 const retryContainer = document.createElement('div');
                 retryContainer.className = 'actions-container';
